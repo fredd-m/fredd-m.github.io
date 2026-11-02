@@ -1,0 +1,352 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Teste de Determinação</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oxanium:wght@500;700&family=Barlow:wght@400;500;600&display=swap">
+<style>
+/* Layout: ecrã único escuro. Painel preto com 10 círculos e 2 pedais no topo, informação ao centro, botões de resposta na zona do polegar. */
+:root {
+  color-scheme: dark;
+  --bg: #0a0d12;
+  --panel: #000000;
+  --surface: #131820;
+  --line: #2a3140;
+  --fg: #eef1f6;
+  --muted: #9aa5b6;
+  --accent: #7db0ff;
+  --on-accent: #08101c;
+  --ok: #3fd47e;
+  --bad: #ff6a5f;
+  --c-branco: #f6f6f6;
+  --c-amarelo: #f7e11b;
+  --c-vermelho: #ff2b1c;
+  --c-verde: #22e060;
+  --c-azul: #2a3cff;
+  --font-display: "Oxanium", "Arial Narrow", sans-serif;
+  --font-body: "Barlow", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.4;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 12px;
+  -webkit-tap-highlight-color: transparent;
+}
+button { font: inherit; color: inherit; }
+button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+.app { height: 100%; max-width: 520px; margin: 0 auto; display: flex; flex-direction: column; gap: 10px; min-height: 0; }
+
+h1 { margin: 0; font-family: var(--font-display); font-weight: 700; font-size: 24px; letter-spacing: .04em; text-transform: uppercase; line-height: 1; }
+.sub { margin: 4px 0 0; color: var(--muted); font-size: 14px; }
+
+/* painel de estímulos */
+.board {
+  background: var(--panel);
+  border: 3px solid var(--line);
+  border-radius: 16px;
+  padding: 14px 14px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: border-color .08s linear;
+}
+.board.ok { border-color: var(--ok); }
+.board.bad { border-color: var(--bad); }
+.dots { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; max-width: 330px; width: 100%; margin: 0 auto; }
+.dot { aspect-ratio: 1; border: 2px solid #e9edf3; border-radius: 50%; background: transparent; max-width: 56px; width: 100%; justify-self: center; }
+.dot.lit { border-color: transparent; }
+.pedals { display: flex; justify-content: space-between; padding: 0 4px; }
+.ped { width: 26px; height: 40px; border: 2px solid #e9edf3; border-radius: 3px; }
+.ped.lit { background: #ffffff; box-shadow: 0 0 14px 2px rgba(255,255,255,.55); }
+
+/* zona central */
+.mid { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 10px; }
+.live { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.stat { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 8px 10px; min-width: 0; }
+.stat b { display: block; font-family: var(--font-display); font-size: 24px; line-height: 1.05; font-variant-numeric: tabular-nums; }
+.stat span { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+.bar { height: 6px; background: var(--surface); border-radius: 3px; overflow: hidden; }
+.bar i { display: block; height: 100%; width: 0; background: var(--accent); transition: width .12s ease; }
+.count { font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; display: flex; justify-content: space-between; }
+
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 16px; display: flex; flex-direction: column; gap: 12px; flex: 1; min-height: 0; overflow-y: auto; }
+.card h2 { margin: 0; font-family: var(--font-display); font-size: 22px; text-transform: uppercase; letter-spacing: .03em; line-height: 1.1; text-wrap: balance; }
+.card p, .card li { color: var(--muted); margin: 0; font-size: 15px; max-width: 54ch; }
+.card ul { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 6px; }
+.card li b { color: var(--fg); font-weight: 600; }
+.big { border: 0; border-radius: 12px; background: var(--accent); color: var(--on-accent); font-weight: 600; font-size: 18px; padding: 14px 18px; cursor: pointer; }
+.ghost { border: 1px solid var(--line); border-radius: 12px; background: transparent; font-weight: 600; font-size: 16px; padding: 12px 16px; cursor: pointer; }
+.row { display: flex; gap: 10px; flex-wrap: wrap; }
+.row > button, .row > a { flex: 1 1 130px; }
+a.ghost, a.big { display: block; text-align: center; text-decoration: none; color: inherit; }
+a.big { color: var(--on-accent); }
+.grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+.grid .stat b { font-size: 28px; }
+.grid .stat.wide { grid-column: 1 / -1; }
+.note { font-size: 13px; color: var(--muted); }
+.record { color: var(--ok); font-weight: 600; }
+.view[hidden] { display: none; }
+.view { display: flex; flex-direction: column; gap: 10px; flex: 1; min-height: 0; }
+
+/* respostas */
+.controls { display: flex; flex-direction: column; gap: 8px; padding-bottom: env(safe-area-inset-bottom, 0px); }
+.colors { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+.colors button { height: 64px; border-radius: 14px; border: 2px solid rgba(255,255,255,.14); cursor: pointer; touch-action: manipulation; }
+.colors button:active { transform: scale(.96); filter: brightness(1.15); }
+.pedbtns { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.pedbtns button { height: 64px; border-radius: 14px; border: 2px solid #e9edf3; background: #1b212b; display: flex; align-items: center; justify-content: center; gap: 10px; font-weight: 600; font-size: 14px; letter-spacing: .05em; text-transform: uppercase; cursor: pointer; touch-action: manipulation; user-select: none; -webkit-user-select: none; }
+.pedbtns button i { width: 18px; height: 28px; border: 2px solid #e9edf3; border-radius: 2px; flex: none; }
+.pedbtns button:active { background: #2b3342; transform: scale(.98); }
+.controls.idle { opacity: .45; }
+
+@media (max-height: 680px) {
+  .colors button, .pedbtns button { height: 52px; }
+  .dot { max-width: 46px; }
+  .ped { height: 32px; }
+  .board { padding: 10px; gap: 8px; }
+}
+@media (prefers-reduced-motion: reduce) { .bar i, .board { transition: none; } }
+</style>
+
+<main class="app">
+  <header>
+    <h1>Teste de Determinação</h1>
+    <p class="sub">Cores e pedais, com ritmo que acelera</p>
+  </header>
+
+  <section class="board" id="board" aria-label="Painel de estímulos">
+    <div class="dots" id="dots"></div>
+    <div class="pedals">
+      <div class="ped" id="pedL"></div>
+      <div class="ped" id="pedR"></div>
+    </div>
+  </section>
+
+  <section class="mid">
+    <div class="view" id="viewIdle">
+      <div class="card">
+        <h2>Como funciona</h2>
+        <ul>
+          <li><b>Acende um círculo:</b> carrega no botão da mesma cor. A posição do círculo não conta.</li>
+          <li><b>Acende um retângulo:</b> carrega no pedal desse lado, esquerdo ou direito.</li>
+          <li>O tempo para responder diminui quando acertas e aumenta quando falhas.</li>
+        </ul>
+        <button type="button" class="big" id="btnStart">Começar (60 estímulos)</button>
+        <a class="ghost" id="shareGame" href="https://wa.me/" target="_blank" rel="noopener">Enviar por WhatsApp</a>
+        <p class="note">Teclado: 1 a 5 para as cores (branco, amarelo, vermelho, verde, azul), setas esquerda e direita para os pedais. Treino geral inspirado nas provas de determinação, não replica a prova oficial nem inclui sons.</p>
+      </div>
+    </div>
+
+    <div class="view" id="viewPlay" hidden>
+      <div class="live">
+        <div class="stat"><b id="sHits">0</b><span>Certas</span></div>
+        <div class="stat"><b id="sWrong">0</b><span>Erros</span></div>
+        <div class="stat"><b id="sMiss">0</b><span>Em falta</span></div>
+        <div class="stat"><b id="sAvg">&ndash;</b><span>Média ms</span></div>
+      </div>
+      <div class="count"><span id="cProg">0 / 60</span><span id="cWin"></span></div>
+      <div class="bar"><i id="barFill"></i></div>
+    </div>
+
+    <div class="view" id="viewResult" hidden>
+      <div class="card">
+        <h2>Sessão terminada</h2>
+        <div class="grid">
+          <div class="stat"><b id="rHits">0</b><span>Certas</span></div>
+          <div class="stat"><b id="rWrong">0</b><span>Erradas</span></div>
+          <div class="stat"><b id="rMiss">0</b><span>Sem resposta</span></div>
+          <div class="stat"><b id="rAcc">0%</b><span>Precisão</span></div>
+          <div class="stat"><b id="rAvg">&ndash;</b><span>Média (ms)</span></div>
+          <div class="stat"><b id="rWin">&ndash;</b><span>Ritmo final (ms)</span></div>
+        </div>
+        <p id="rRecord" class="note"></p>
+        <div class="row">
+          <button type="button" class="big" id="btnAgain">Repetir</button>
+          <a class="ghost" id="shareResult" href="https://wa.me/" target="_blank" rel="noopener">Enviar resultado por WhatsApp</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="controls idle" id="controls" aria-label="Respostas">
+    <div class="colors" id="colors"></div>
+    <div class="pedbtns">
+      <button type="button" id="btnPL" aria-label="Pedal esquerdo"><i></i> Esquerdo</button>
+      <button type="button" id="btnPR" aria-label="Pedal direito">Direito <i></i></button>
+    </div>
+  </section>
+</main>
+
+<script>
+(function () {
+  var COLORS = [
+    { id: 'branco',   label: 'Branco',   hex: '#f6f6f6' },
+    { id: 'amarelo',  label: 'Amarelo',  hex: '#f7e11b' },
+    { id: 'vermelho', label: 'Vermelho', hex: '#ff2b1c' },
+    { id: 'verde',    label: 'Verde',    hex: '#22e060' },
+    { id: 'azul',     label: 'Azul',     hex: '#2a3cff' }
+  ];
+  var TOTAL = 60, WIN_START = 1900, WIN_MIN = 750, WIN_MAX = 2400, GAP_MIN = 250, GAP_MAX = 600, PEDAL_SHARE = 0.3;
+
+  var $ = function (id) { return document.getElementById(id); };
+  var board = $('board'), dotsEl = $('dots'), pedL = $('pedL'), pedR = $('pedR');
+  var colorsEl = $('colors'), controls = $('controls');
+  var viewIdle = $('viewIdle'), viewPlay = $('viewPlay'), viewResult = $('viewResult');
+
+  var dots = [], colorBtns = {};
+  for (var i = 0; i < 10; i++) { var d = document.createElement('div'); d.className = 'dot'; dotsEl.appendChild(d); dots.push(d); }
+  COLORS.forEach(function (c, idx) {
+    var b = document.createElement('button');
+    b.type = 'button'; b.id = 'col-' + c.id; b.style.background = c.hex; b.setAttribute('aria-label', c.label + ' (tecla ' + (idx + 1) + ')');
+    colorsEl.appendChild(b); colorBtns[c.id] = b;
+    b.addEventListener('pointerdown', function (e) { e.preventDefault(); respond('color', c.id); });
+    b.addEventListener('click', function (e) { if (e.detail === 0) respond('color', c.id); });
+  });
+  [['btnPL', 'left'], ['btnPR', 'right']].forEach(function (p) {
+    var el = $(p[0]);
+    el.addEventListener('pointerdown', function (e) { e.preventDefault(); respond('pedal', p[1]); });
+    el.addEventListener('click', function (e) { if (e.detail === 0) respond('pedal', p[1]); });
+  });
+
+  var state = 'idle', count = 0, win = WIN_START, stim = null, t0 = 0, stats, timers = [];
+
+  function later(fn, ms) { var id = setTimeout(fn, ms); timers.push(id); return id; }
+  function clearTimers() { timers.forEach(clearTimeout); timers = []; }
+  function avg(a) { return a.length ? Math.round(a.reduce(function (s, x) { return s + x; }, 0) / a.length) : null; }
+  function view(name) {
+    viewIdle.hidden = name !== 'idle'; viewPlay.hidden = name !== 'play'; viewResult.hidden = name !== 'result';
+    controls.classList.toggle('idle', name !== 'play');
+  }
+  function clearBoard() {
+    dots.forEach(function (d) { d.classList.remove('lit'); d.style.background = ''; d.style.boxShadow = ''; });
+    pedL.classList.remove('lit'); pedR.classList.remove('lit');
+  }
+  function flash(kind) {
+    board.classList.remove('ok', 'bad');
+    if (kind) { board.classList.add(kind); later(function () { board.classList.remove('ok', 'bad'); }, 160); }
+  }
+  function updateLive() {
+    $('sHits').textContent = stats.hits;
+    $('sWrong').textContent = stats.wrong;
+    $('sMiss').textContent = stats.miss;
+    var a = avg(stats.rts);
+    $('sAvg').textContent = a === null ? '–' : a;
+    $('cProg').textContent = count + ' / ' + TOTAL;
+    $('cWin').textContent = 'Tempo por estímulo: ' + Math.round(win) + ' ms';
+    $('barFill').style.width = (count / TOTAL * 100) + '%';
+  }
+
+  function start() {
+    clearTimers(); clearBoard();
+    stats = { hits: 0, wrong: 0, miss: 0, rts: [] };
+    count = 0; win = WIN_START; stim = null;
+    state = 'gap';
+    view('play'); updateLive();
+    later(next, 1000);
+  }
+
+  function next() {
+    if (count >= TOTAL) { finish(); return; }
+    clearBoard(); state = 'gap';
+    later(show, GAP_MIN + Math.random() * (GAP_MAX - GAP_MIN));
+  }
+
+  function show() {
+    if (Math.random() < PEDAL_SHARE) {
+      var side = Math.random() < 0.5 ? 'left' : 'right';
+      stim = { kind: 'pedal', value: side };
+      (side === 'left' ? pedL : pedR).classList.add('lit');
+    } else {
+      var c = COLORS[Math.floor(Math.random() * COLORS.length)];
+      var pos = Math.floor(Math.random() * 10);
+      stim = { kind: 'color', value: c.id };
+      var d = dots[pos];
+      d.classList.add('lit'); d.style.background = c.hex; d.style.boxShadow = '0 0 14px 3px ' + c.hex + '99';
+    }
+    state = 'showing';
+    t0 = performance.now();
+    later(onTimeout, win);
+  }
+
+  function adapt(good) {
+    win = good ? Math.max(WIN_MIN, win * 0.97) : Math.min(WIN_MAX, win * 1.08);
+  }
+
+  function onTimeout() {
+    if (state !== 'showing') return;
+    stats.miss++; count++; adapt(false);
+    state = 'gap'; flash('bad'); updateLive();
+    next();
+  }
+
+  function respond(kind, value) {
+    if (state !== 'showing') return;
+    var rt = Math.round(performance.now() - t0);
+    clearTimers();
+    var ok = stim.kind === kind && stim.value === value;
+    count++;
+    if (ok) { stats.hits++; stats.rts.push(rt); } else { stats.wrong++; }
+    adapt(ok);
+    state = 'gap';
+    flash(ok ? 'ok' : 'bad');
+    updateLive();
+    next();
+  }
+
+  function finish() {
+    clearTimers(); clearBoard(); state = 'done';
+    var a = avg(stats.rts);
+    $('rHits').textContent = stats.hits;
+    $('rWrong').textContent = stats.wrong;
+    $('rMiss').textContent = stats.miss;
+    $('rAcc').textContent = Math.round(stats.hits / TOTAL * 100) + '%';
+    $('rAvg').textContent = a === null ? '–' : a;
+    $('rWin').textContent = Math.round(win);
+    var msg = '';
+    if (a !== null) {
+      var prev = null, key = 'determinacao-melhor';
+      try { var v = localStorage.getItem(key); prev = v ? parseInt(v, 10) : null; } catch (e) {}
+      if (stats.hits >= Math.ceil(TOTAL * 0.8)) {
+        if (prev === null || a < prev) {
+          msg = '<span class="record">Novo recorde de média de reação.</span>';
+          try { localStorage.setItem(key, String(a)); } catch (e) {}
+        } else {
+          msg = 'Melhor média até agora: ' + prev + ' ms.';
+        }
+      } else {
+        msg = 'Para contar como recorde, acerta pelo menos 80% dos estímulos.';
+      }
+    }
+    $('rRecord').innerHTML = msg;
+    $('shareResult').href = waLink('Teste de Determinação: ' + stats.hits + ' de ' + TOTAL + ' certas (' + Math.round(stats.hits / TOTAL * 100) + '%), média de ' + (a === null ? 'sem dados' : a + ' ms') + ', ritmo final ' + Math.round(win) + ' ms.' + (pageUrl ? ' ' + pageUrl : ''));
+    view('result');
+    $('btnAgain').focus({ preventScroll: true });
+  }
+
+  function waLink(text) { return 'https://wa.me/?text=' + encodeURIComponent(text); }
+  var pageUrl = '';
+  try { if (/^https?:/.test(location.href)) pageUrl = location.href.split('#')[0]; } catch (e) {}
+  $('shareGame').href = waLink('Experimenta este Teste de Determinação para treinar reflexos' + (pageUrl ? ': ' + pageUrl : ''));
+
+  $('btnStart').addEventListener('click', start);
+  $('btnAgain').addEventListener('click', start);
+  document.addEventListener('keydown', function (e) {
+    var n = parseInt(e.key, 10);
+    if (n >= 1 && n <= 5) { respond('color', COLORS[n - 1].id); }
+    else if (e.key === 'ArrowLeft') { e.preventDefault(); respond('pedal', 'left'); }
+    else if (e.key === 'ArrowRight') { e.preventDefault(); respond('pedal', 'right'); }
+  });
+
+  view('idle');
+})();
+</script>
+
+</body></html>
